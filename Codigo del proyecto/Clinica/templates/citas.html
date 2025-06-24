@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container py-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <!-- Formulario para agendar cita -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #09202f;">
+                    <h5 class="mb-0" style="color: #f1f3f4;">Agendar Cita</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('citas') }}">
+                        <input type="date" name="fecha" class="form-control mb-2" value="{{ fecha_form }}" onchange="this.form.submit()" required min="{{ fecha_minima }}">
+                    </form>
+
+                    {% if fecha_form %}
+                    <form method="POST" action="{{ url_for('guardar_cita') }}">
+                        <input type="hidden" name="fecha" value="{{ fecha_form }}">
+
+                        <select name="codmedico" id="codmedico" class="form-select mb-2" required onchange="actualizarHoras()">
+                            <option value="">Seleccione un médico</option>
+                            {% for m in medicos_disponibles %}
+                                <option value="{{ m.codmedico }}">{{ m.nombre }} {{ m.apellido }} ({{ m.hora_inicio }} - {{ m.hora_fin }})</option>
+                            {% endfor %}
+                        </select>
+
+                        <select name="hora" id="hora" class="form-select mb-2" required>
+                            <option value="">Seleccione una hora</option>
+                        </select>
+
+                        <input list="listaPacientes" name="codexpediente" class="form-control mb-2" placeholder="Seleccione Paciente" required>
+                        <datalist id="listaPacientes">
+                            {% for p in pacientes %}
+                                <option value="{{ p[0] }}">{{ p[1] }} {{ p[2] }}</option>
+                            {% endfor %}
+                        </datalist>
+
+                        <input type="text" name="motivo" class="form-control mb-2" placeholder="Motivo" required>
+
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class='bx bx-calendar-check'></i> Guardar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de citas -->
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #09202f;">
+                    <h5 class="mb-0" style="color: #f1f3f4;">Citas Registradas</h5>
+                </div>
+                <div class="card-body">
+                    {% if citas %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle" id="tbl">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Motivo</th>
+                                    <th>Paciente</th>
+                                    <th>Médico</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                            {% for c in citas %}
+                            <tr>
+                                <td>{{ c[0] }}</td>
+                                <td>{{ c[1] }}</td>
+                                <td>{{ c[2] }}</td>
+                                <td>{{ c[3] }}</td>
+                                <td>{{ c[4] }} {{ c[5] }}</td>
+                                <td>{{ c[6] }} {{ c[7] }}</td>
+                                <td>{{ c[9] }}</td>
+                                <td>
+                                {% if c[9] != "Cancelada" and c[9] in ["Pendiente", "Reprogramada"] %}
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalReprogramar{{ c[0] }}">
+                                        <i class='bx bx-edit-alt'></i> 
+                                    </button>
+
+                                    <div class="modal fade" id="modalReprogramar{{ c[0] }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <form method="POST" action="{{ url_for('reprogramar_cita_modal') }}" class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Reprogramar Cita</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="codigo" value="{{ c[0] }}">
+                                                    <input type="hidden" name="codmedico" value="{{ c[8] }}">
+
+                                                    <label class="form-label">Médico:</label>
+                                                    <input type="text" class="form-control mb-3" value="{{ c[6] }} {{ c[7] }}" readonly>
+                                                    <label class="form-label">Nueva Fecha:</label>
+                                                    <input type="date"
+                                                        name="nueva_fecha"
+                                                        id="fecha_{{ c[0] }}"
+                                                        class="form-control mb-2"
+                                                        value="{{ c[1] }}"
+                                                        min="{{ c[10] }}"
+                                                        onchange="actualizarHorasModal('{{ c[0] }}', '{{ c[8] }}')"
+                                                        required>
+                                                    <label class="form-label">Nueva Hora:</label>
+                                                    <select id="hora_{{ c[0] }}" name="nueva_hora" class="form-select mb-2" required>
+                                                        <option value="{{ c[2] }}">{{ c[2] }}</option> <!-- Hora actual -->
+                                                    </select>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                <form method="POST" action="{{ url_for('cancelar_cita') }}" class="d-inline-block" onsubmit="return confirm('¿Seguro que desea cancelar esta cita?');">
+                                    <input type="hidden" name="codcita" value="{{ c[0] }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class='bx bx-x-circle'></i> 
+                                    </button>
+                                </form> 
+                                {% elif c[9] == "Cancelada" %}
+                                    <span class="text-muted fst-italic">Sin opciones</span> 
+                                {% endif %}
+                              
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="alert alert-info">No hay citas registradas.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function actualizarHoras() {
+    const medicoId = document.getElementById("codmedico").value;
+    const horaSelect = document.getElementById("hora");
+    horaSelect.innerHTML = '<option value="">Seleccione una hora</option>';
+
+    const medico = {{ medicos_disponibles | tojson | safe }}.find(m => m.codmedico == medicoId);
+    if (medico && medico.bloques) {
+        medico.bloques.forEach(hora => {
+            const option = document.createElement("option");
+            option.value = hora;
+            option.textContent = hora;
+            horaSelect.appendChild(option);
+        });
+    }
+}
+
+function actualizarHorasModal(codCita, codMedico) {
+    const fecha = document.getElementById(`fecha_${codCita}`).value;
+    const selectHora = document.getElementById(`hora_${codCita}`);
+    
+    selectHora.innerHTML = '<option>Cargando...</option>';
+
+    fetch(`/horas_disponibles/${codMedico}/${fecha}`)
+        .then(res => res.json())
+        .then(data => {
+            selectHora.innerHTML = '';
+            if (data.length === 0) {
+                selectHora.innerHTML = '<option value="">No hay disponibilidad</option>';
+            } else {
+                selectHora.innerHTML = '<option value="">Seleccione una hora</option>';
+                data.forEach(h => {
+                    const opt = document.createElement('option');
+                    opt.value = h;
+                    opt.textContent = h;
+                    selectHora.appendChild(opt);
+                });
+            }
+        })
+        .catch(err => {
+            console.error("Error cargando horas:", err);
+            selectHora.innerHTML = '<option value="">Error al cargar</option>';
+        });
+}
+
+//para tabla
+$(document).ready( function () {
+$('#tbl').DataTable( {
+    language: {
+        search: "Buscar en tabla:",
+		lengthMenu: "Mostrar _MENU_ Entradas",
+		info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+		infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+		infoFiltered: "(filtrado de un total de _MAX_ registros)",
+		zeroRecords: "No se encontraron resultados",
+		searchPlaceholder: "Buscar..",
+    }
+} );
+});
+</script>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<!-- SweetAlert -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          Swal.fire({
+            title: "{{ message }}",
+            icon: "{{ category }}",
+            showConfirmButton: true,
+            timer: 2000
+          });
+        });
+      </script>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Registro de paciente -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background-color: #09202f;">
+                    <h5 class="mb-0" style="color: #f1f3f4;">Registrar Paciente</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('crear_paciente') }}" method="post">
+                        <input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre" required>
+                        <input type="text" name="apellido" class="form-control mb-2" placeholder="Apellido" required>
+                        <input type="number" name="edad" class="form-control mb-2" placeholder="Edad" required>
+                        <input type="text" name="dui" class="form-control mb-2" placeholder="DUI" required>
+                        <input type="text" name="direccion" class="form-control mb-2" placeholder="Dirección" required>
+                        <input type="text" name="telefono" class="form-control mb-2" placeholder="Teléfono" required>
+                        <input type="text" name="usuario" class="form-control mb-2" placeholder="Usuario" required>
+                        <input type="password" name="contrase" class="form-control mb-2" placeholder="Contraseña" required>
+                        <button type="submit" class="btn btn-outline-primary w-100"><i class='bx bx-save'></i> Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de pacientes -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background-color: #09202f;">
+                    <h5 class="mb-0" style="color: #f1f3f4;">Pacientes Registrados</h5>
+                </div>
+                <div class="card-body">
+                    {% if pacientes %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Edad</th>
+                                    <th>Dui</th>
+                                    <th>Direccion</th>
+                                    <th>Telefono</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for p in pacientes %}
+                                <tr>
+                                    <td>{{ p[0] }}</td>
+                                    <td>{{ p[1] }} {{ p[2] }}</td>
+                                    <td>{{ p[3] }}</td>
+                                    <td>{{ p[4] }}</td>
+                                    <td>{{ p[5] }}</td>
+                                    <td>{{ p[6] }}</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar{{ p[0] }}">
+                                            <i class='bx bx-edit'></i>
+                                        </button>
+                                        <button data-url="{{ url_for('eliminar_paciente', cod=p[0]) }}" class="btn btn-danger btn-sm btn-eliminar">
+                                            <i class='bx bx-trash'></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal editar -->
+                                <div class="modal fade" id="modalEditar{{ p[0] }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Editar Paciente</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                            <form action="{{ url_for('editar_paciente') }}" method="post" class="modal-content">
+                                                <input type="hidden" name="cod" value="{{ p[0] }}">
+                                                <input type="text" name="nombre" class="form-control mb-2" value="{{ p[1] }}" required>
+                                                <input type="text" name="apellido" class="form-control mb-2" value="{{ p[2] }}" required>
+                                                <input type="number" name="edad" class="form-control mb-2" value="{{ p[3] }}" required>
+                                                <input type="text" name="dui" class="form-control mb-2" value="{{ p[4] }}" required>
+                                                <input type="text" name="direccion" class="form-control mb-2" value="{{ p[5] }}" required>
+                                                <input type="text" name="telefono" class="form-control mb-2" value="{{ p[6] }}" required>
+                                                
+                                            
+                                            </div>
+                                            <div class="modal-footer"> 
+                                                <button type="submit" class="btn btn-outline-success"><i class='bx bx-check'></i> Guardar Cambios</button>  
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="alert alert-info">No hay pacientes registrados.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+//para eliminar
+document.addEventListener("DOMContentLoaded", function () {
+  const botonesEliminar = document.querySelectorAll(".btn-eliminar");
+
+  botonesEliminar.forEach(boton => {
+    boton.addEventListener("click", function () {
+      const url = this.getAttribute("data-url");
+
+      Swal.fire({
+        title: "¿Estás seguro?",
+        text: "Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Crear y enviar un formulario POST dinámicamente
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = url;
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

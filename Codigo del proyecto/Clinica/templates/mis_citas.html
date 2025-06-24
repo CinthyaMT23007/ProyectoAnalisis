@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container py-4">
+    <h3>Mis Citas</h3>
+
+    {% if citas %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>Código</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Motivo</th>
+                    <th>Paciente</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                {% for c in citas %}
+                <tr {% if c[1] == hoy %}style="border: 2px solid #198754; background-color: #e9fbe5;"{% endif %}>
+                    <td>{{ c[0] }}</td>
+                    <td>
+                        {{ c[1] }}
+                        {% if c[1] == hoy %}
+                        <span class="badge bg-success ms-2">HOY</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ c[2] }}</td>
+                    <td>{{ c[3] }}</td>
+                    <td>{{ c[4] }} {{ c[5] }}</td>
+                    <td>{{ c[6] }}</td>
+                    <td>
+                        {% if c[6] in ['Pendiente', 'Reprogramada'] %}
+                        <a href="{{ url_for('registrar_consulta', codcita=c[0]) }}" class="btn btn-sm btn-primary">
+                            <i class="bx bx-notepad"></i> Registrar Consulta
+                        </a>
+                        {% else %}
+                        <span class="text-muted fst-italic">Consulta registrada</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No tienes citas programadas.</div>
+    {% endif %}
+</div>
+{% endblock %}

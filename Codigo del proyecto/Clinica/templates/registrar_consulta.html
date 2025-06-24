@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container py-4">
+    <h3>Registrar Consulta</h3>
+    <form method="POST">
+        <input type="hidden" name="fecha" value="{{ cita[0] }}">
+        <input type="hidden" name="codexpediente" value="{{ cita[2] }}">
+        <input type="hidden" name="codmedico" value="{{ cita[3] }}">
+
+        <div class="mb-3">
+            <label class="form-label">Paciente</label>
+            <input type="text" class="form-control" value="{{ cita[4] }} {{ cita[5] }}" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Motivo de Consulta</label>
+            <textarea name="motivo" class="form-control" required>{{ cita[1] }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Diagnóstico</label>
+            <textarea name="diagnostico" class="form-control" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar Consulta</button>
+        <a href="{{ url_for('mis_citas') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+<h4 class="mt-5">Historial Clínico del Paciente</h4>
+
+{% if historial %}
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light text-center">
+            <tr>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Diagnóstico</th>
+                <th>Médico</th>
+            </tr>
+        </thead>
+        <tbody class="text-center">
+            {% for h in historial %}
+            <tr>
+                <td>{{ h[0] }}</td>
+                <td>{{ h[1] }}</td>
+                <td>{{ h[2] }}</td>
+                <td>{{ h[3] }} {{ h[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    <div class="alert alert-info">Este paciente no tiene consultas previas registradas.</div>
+{% endif %}
+
+{% endblock %}

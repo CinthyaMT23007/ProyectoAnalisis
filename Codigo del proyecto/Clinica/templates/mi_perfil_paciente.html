@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container py-4">
+    <h3 class="mb-4">Mi Perfil Médico</h3>
+
+    <!-- Pestañas -->
+    <ul class="nav nav-tabs mb-3" id="perfilTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="citas-tab" data-bs-toggle="tab" data-bs-target="#citas" type="button" role="tab">Mis Citas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button" role="tab">Mi Historial Clínico</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="perfilTabsContent">
+        <!-- TAB: Mis Citas -->
+        <div class="tab-pane fade show active" id="citas" role="tabpanel">
+            {% if citas %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>Código</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Motivo</th>
+                            <th>Médico</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        {% for c in citas %}
+                        <tr class="{% if c[1] == hoy %}table-warning{% endif %}">
+                            <td>{{ c[0] }}</td>
+                            <td>{{ c[1] }}</td>
+                            <td>{{ c[2] }}</td>
+                            <td>{{ c[3] }}</td>
+                            <td>{{ c[4] }} {{ c[5] }}</td>
+                            <td>{{ c[6] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No tienes citas programadas.</div>
+            {% endif %}
+        </div>
+
+        <!-- TAB: Mi Historial Clínico -->
+        <div class="tab-pane fade" id="historial" role="tabpanel">
+            {% if historial %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>Código</th>
+                            <th>Fecha</th>
+                            <th>Médico</th>
+                            <th>Motivo</th>
+                            <th>Diagnóstico</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        {% for h in historial %}
+                        <tr>
+                            <td>{{ h[0] }}</td>
+                            <td>{{ h[1] }}</td>
+                            <td>{{ h[2] }} {{ h[3] }}</td>
+                            <td>{{ h[4] }}</td>
+                            <td>{{ h[5] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">Aún no tienes historial clínico registrado.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

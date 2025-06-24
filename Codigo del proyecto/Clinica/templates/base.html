@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Clínica - Panel</title>
+
+	<!-- Bootstrap 5 -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<!-- Boxicons para íconos -->
+	<link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet' />
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+	<script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
+	<script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
+	<!-- Estilos personalizados -->
+	<link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" />
+	<link href="{{ url_for('static', filename='estilo.css') }}" rel="stylesheet" />
+</head>
+<body>
+<section id="sidebar">
+    <a href="#" class="brand">
+        <i class='bx bx-hospital'></i>
+        <span class="text">Clínica</span>
+    </a>
+    <ul class="side-menu top">
+        <li><a href="{{ url_for('inicio') }}" class=""><i class='bx bxs-dashboard'></i><span class="text">Inicio</span></a></li>
+
+        {% if session.get('idrol') == 1 %}
+            <li><a href="{{ url_for('pacientes') }}" class=""><i class='bx bx-user-plus'></i><span class="text">Registrar Paciente</span></a></li>
+            <li><a href="{{ url_for('citas') }}" class=""><i class='bx bx-calendar-check'></i><span class="text">Citas</span></a></li>
+            <li><a href="{{ url_for('doctores') }}" class=""><i class='bx bx-user-voice'></i><span class="text">Doctores</span></a></li>
+
+        {% elif session.get('idrol') == 2 %}
+            <li><a href="{{ url_for('mis_citas') }}" class=""><i class='bx bx-calendar-check'></i><span class="text">Mis Citas</span></a></li>
+            <li><a href="{{ url_for('historial_clinico') }}" class=""><i class='bx bx-book'></i><span class="text">Historial Clínico</span></a></li>
+
+        {% elif session.get('idrol') == 4 %}
+            <li><a href="{{ url_for('pacientes') }}" class=""><i class='bx bx-user-plus'></i><span class="text">Registrar Paciente</span></a></li>
+            <li><a href="{{ url_for('citas') }}" class=""><i class='bx bx-calendar-check'></i><span class="text">Citas</span></a></li>
+
+        {% elif session.get('idrol') == 3 %}
+            <li><a href="{{ url_for('perfil_paciente') }}" class=""><i class='bx bx-calendar-check'></i><span class="text">Mis Citas</span></a></li>
+        {% endif %}
+    </ul>
+    <ul class="side-menu">
+        <li><a href="{{ url_for('logout') }}" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Cerrar Sesión</span></a></li>
+    </ul>
+</section>
+	<section id="content">
+		<div class="header-bar d-flex justify-content-between align-items-center">
+			<div class="d-flex align-items-center">
+				<button id="toggleSidebar" class="btn-toggle d-md-none me-3">
+					<i class='bx bx-menu'></i>
+				</button>
+				<h4 class="fw-bold mb-0">Panel de Control</h4>
+			</div>
+			<div class="d-flex align-items-center gap-3">
+				<span class="fw-semibold">Bienvenido, {{ session.get('usuario', '') }} {{ session.get('apellido', '') }}</span>
+				<i class='bx bx-bell fs-4'></i>
+			</div>
+		</div>
+		<main>
+			{% block contenido %}
+			{% endblock %}
+		</main>
+	</section>
+
+	<script>
+		const toggleBtn = document.getElementById("toggleSidebar");
+		const sidebar = document.getElementById("sidebar");
+		const content = document.getElementById("content");
+
+		toggleBtn.addEventListener("click", function (e) {
+			e.stopPropagation();
+			sidebar.classList.toggle("show");
+			content.classList.toggle("sidebar-active");
+		});
+
+		document.addEventListener("click", function (event) {
+			if (
+				sidebar.classList.contains("show") &&
+				!sidebar.contains(event.target) &&
+				event.target !== toggleBtn &&
+				!toggleBtn.contains(event.target)
+			) {
+				sidebar.classList.remove("show");
+				content.classList.remove("sidebar-active");
+			}
+		});
+	</script>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

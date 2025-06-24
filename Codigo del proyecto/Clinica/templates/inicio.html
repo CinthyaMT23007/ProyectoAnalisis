@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container py-4">
+  <h2 class="mb-4">Bienvenido/a {{ session['usuario'] }}</h2>
+
+  {% if session['idrol'] == 1 %}  {# ADMIN #}
+<div class="row g-4">
+  <!-- Tarjeta: Pacientes registrados -->
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center">
+        <i class="bx bx-user-plus fs-1 text-primary me-3"></i>
+        <div>
+          <h5 class="card-title">Pacientes Registrados</h5>
+          <h3>{{ total_pacientes }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjeta: Citas programadas -->
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center">
+        <i class="bx bx-calendar-check fs-1 text-success me-3"></i>
+        <div>
+          <h5 class="card-title">Citas Programadas</h5>
+          <h3>{{ total_citas }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjeta: Doctores activos -->
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center">
+        <i class="bx bx-user-voice fs-1 text-warning me-3"></i>
+        <div>
+          <h5 class="card-title">Doctores Activos</h5>
+          <h3>{{ total_doctores }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  {% elif session['idrol'] == 2 %}  {# MÉDICO #}
+<div class="row g-4">
+<div class="col-md-4">
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center">
+        <i class="bx bx-calendar-event fs-1 text-info me-3"></i>
+        <div>
+          <h5 class="card-title">Citas para Hoy</h5>
+          <h3>{{ total_citas_hoy }}</h3>
+        </div>
+      </div>
+    </div>
+ 
+</div>
+<!-- Tarjeta: Total citas programadas -->
+<div class="col-md-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-body d-flex align-items-center">
+      <i class="bx bx-calendar-event fs-1 text-success me-3"></i>
+      <div>
+        <h5 class="card-title">Citas Programadas</h5>
+        <h3>{{ total_citas_programadas }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="mt-5">
+  <h4>Mis Citas de Hoy</h4>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Paciente</th>
+        <th>Hora</th>
+        <th>Motivo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in citas_hoy %}
+      <tr>
+        <td>{{ c.nombre_paciente }}</td>
+        <td>{{ c.hora }}</td>
+        <td>{{ c.motivo }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">No hay citas para hoy.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<h4 class="mt-5">Citas Programadas</h4>
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>Paciente</th>
+      <th>Fecha</th>
+      <th>Hora</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for cita in citas_futuras %}
+    <tr>
+      <td>{{ cita.nombre_paciente }}</td>
+      <td>{{ cita.fecha }}</td>
+      <td>{{ cita.hora }}</td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="3" class="text-center text-muted">No hay citas futuras programadas.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+  {% elif session['idrol'] == 3 %}  {# PACIENTE #}
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center">
+        <i class="bx bx-calendar-check fs-1 text-success me-3"></i>
+        <div>
+          <h5 class="card-title">Próximas Citas</h5>
+          <h3>{{ citas_proximas | length }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-5">
+  <h4>Mis Próximas Citas</h4>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Médico</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in citas_proximas %}
+      <tr>
+        <td>{{ c.doctor }}</td>
+        <td>{{ c.fecha.strftime('%d/%m/%Y') }}</td>
+        <td>{{ c.hora }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">No tienes citas agendadas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+  {% elif session['idrol'] == 4 %}  {# RECEPCIONISTA #}
+
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center">
+        <i class="bx bx-calendar-check fs-1 text-success me-3"></i>
+        <div>
+          <h5 class="card-title">Citas Pendientes</h5>
+          <h3>{{ total_pendientes }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="mt-5">
+  <h4>Últimas Citas Registradas</h4>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Paciente</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in ultimas_citas %}
+      <tr>
+        <td>{{ c.paciente }}</td>
+        <td>{{ c.fecha.strftime('%d/%m/%Y') }}</td>
+        <td>{{ c.hora }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">Sin registros recientes.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+  {% endif %}
+</div>
+
+<!-- Sección extra -->
+<div class="mt-5">
+  {% if session['idrol'] == 1 %}
+    <h4>Próximas citas</h4>
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Paciente</th>
+          <th>Doctor</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cita in citas_proximas %}
+        <tr>
+          <td>{{ cita.paciente_nombre }} {{ cita.paciente_apellido }}</td>
+          <td>{{ cita.doctor_nombre }} {{ cita.doctor_apellido }}</td>
+          <td>{{ cita.fecha }}</td>
+          <td>{{ cita.hora }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="text-center text-muted">No hay citas próximas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container py-4">
+  <h3>Historial Clínico</h3>
+
+  <form method="GET" action="{{ url_for('historial_clinico') }}">
+    <label for="paciente">Seleccione Paciente:</label>
+    <input list="listaPacientes" name="codexpediente" id="paciente" class="form-control" placeholder="Buscar paciente..." required
+        value="{{ paciente.CodExpediente if paciente }}">
+    <datalist id="listaPacientes">
+      {% for p in pacientes %}
+        <option value="{{ p.CodExpediente }}">{{ p.Nombre }} {{ p.Apellido }}</option>
+      {% endfor %}
+    </datalist>
+    <button type="submit" class="btn btn-primary mt-2">Buscar</button>
+  </form>
+
+  {% if historial %}
+  <hr />
+  <h5>Consultas para: {{ paciente.Nombre }} {{ paciente.Apellido }}</h5>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered mt-3">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Fecha</th>
+          <th>Motivo</th>
+          <th>Diagnóstico</th>
+          <th>Médico</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for consulta in historial %}
+        <tr>
+          <td>{{ consulta.CodConsulta }}</td>
+          <td>{{ consulta.FechaConsulta.strftime('%Y-%m-%d') }}</td>
+          <td>{{ consulta.MotivoConsulta }}</td>
+          <td>{{ consulta.Diagnostico }}</td>
+          <td>{{ consulta.MedicoNombre }} {{ consulta.MedicoApellido }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% elif paciente %}
+  <div class="alert alert-info mt-3">No se encontraron consultas para este paciente.</div>
+  {% endif %}
+</div>
+{% endblock %}
